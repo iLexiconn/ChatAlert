@@ -1,0 +1,17 @@
+[
+    {
+        "modid": "chatalert",
+        "name": "ChatAlert",
+        "description": "Notifications for the Minecraft chat.",
+        "version": "${version}",
+        "url": "https://ilexiconn.net/",
+        "authorList": [
+            "iLexiconn"
+        ],
+        "credits": "",
+        "dependencies": [
+            "Forge",
+            "llibrary@[0.5.4]"
+        ]
+    }
+]

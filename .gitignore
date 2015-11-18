@@ -1,0 +1,9 @@
+minecraft/
+.gradle/
+build/
+out/
+*.iml
+*.ipr
+*.iws
+
+secret.properties
