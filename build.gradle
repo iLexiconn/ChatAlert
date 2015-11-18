@@ -1,0 +1,145 @@
+buildscript {
+    repositories {
+        mavenCentral()
+        maven {
+            name = "forge"
+            url = "http://files.minecraftforge.net/maven"
+        }
+        maven {
+            name = "sonatype"
+            url = "https://oss.sonatype.org/content/repositories/snapshots/"
+        }
+    }
+    dependencies {
+        classpath "net.minecraftforge.gradle:ForgeGradle:1.2-SNAPSHOT"
+        classpath "com.matthewprenger:CurseGradle:1.0.3-SNAPSHOT"
+    }
+}
+
+apply plugin: "forge"
+apply plugin: "com.matthewprenger.cursegradle"
+
+ext.configFile = file "build.properties"
+configFile.withReader {
+    def prop = new Properties()
+    prop.load(it)
+    project.ext.config = new ConfigSlurper().parse prop
+}
+
+def secretFile = file "secret.properties"
+project.ext.secret = null
+if (secretFile.exists()) {
+    secretFile.withReader {
+        def prop = new Properties()
+        prop.load(it)
+        project.ext.secret = new ConfigSlurper().parse prop
+    }
+}
+
+version = getVersionFromJava()
+group = config.mod_group
+archivesBaseName = config.mod_name
+sourceCompatibility = targetCompatibility = 1.6
+
+minecraft {
+    version = config.minecraft_version + "-" + config.forge_version + "-" + config.minecraft_version
+    runDir = "minecraft"
+    replace '${version}', project.version
+}
+
+repositories {
+    mavenCentral()
+    maven {
+        name = "ilexiconn"
+        url = "http://maven.ilexiconn.net/"
+    }
+}
+
+dependencies {
+    compile "net.ilexiconn:llibrary:${config.llibrary_version}-${config.minecraft_version}:dev"
+}
+
+processResources {
+    inputs.property "version", getVersionFromJava()
+    inputs.property "mcversion", project.minecraft.version
+
+    from(sourceSets.main.resources.srcDirs) {
+        include "mcmod.info"
+        expand "version": project.version
+        expand "mcversion": project.minecraft.version
+    }
+
+    from(sourceSets.main.resources.srcDirs) {
+        exclude "mcmod.info"
+    }
+}
+
+task sourceJar(type: Jar, dependsOn: classes) {
+    classifier = "sources"
+    from sourceSets.main.allSource
+}
+
+artifacts {
+    archives sourceJar
+}
+
+import groovy.json.JsonSlurper
+curseforge {
+    def url = "https://github.com/iLexiconn/ChatAlert/raw/version/versions.json".toURL()
+    def versions = new JsonSlurper().parseText url.text
+
+    def type = "release"
+    def latestVersion = ""
+    versions.versions.each{version, changelog -> latestVersion = version}
+    if (versions.beta && versions.beta == latestVersion) {
+        type = "beta"
+    }
+
+    if (secret) {
+        apiKey = secret.curseForgeApiKey
+    } else {
+        apiKey = ""
+    }
+
+    project {
+        id = "238065"
+
+        releaseType = type
+        changelog = versions.versions[versions.getAt(type)].join("\n")
+
+        addGameVersion config.minecraft_version
+
+        mainArtifact(jar) {
+            displayName = "ChatAlert " + getVersionFromJavaWithoutMc() + " for Minecraft " + config.minecraft_version
+        }
+
+        addArtifact(sourceJar) {
+            displayName = "Sources"
+        }
+    }
+}
+
+String getVersionFromJava() {
+    return getVersionFromJavaWithoutMc() + "-1.7.10";
+}
+
+String getVersionFromJavaWithoutMc() {
+    String major = "0";
+    String revision = "0";
+    String patch = "0";
+    String prefix = "public static final String VERSION = \"";
+    File file = file("src/main/java/net/ilexiconn/chatalert/ChatAlert.java")
+    file.eachLine { String s ->
+        s = s.trim();
+        if (s.startsWith(prefix)) {
+            s = s.substring(prefix.length(), s.length() - 2);
+            String[] pts = s.split("\\.");
+
+            major = pts[0];
+            revision = pts[1];
+            patch = pts[2];
+        }
+    }
+
+    return "$major.$revision.$patch";
+}
