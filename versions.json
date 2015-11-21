@@ -1,10 +1,15 @@
 {
-  "release": "0.1.0",
+  "release": "0.1.1",
   "versions": {
     "0.1.0": [
       "Initial release"
+    ],
+    "0.1.1": [
+      "Added LLibrary wrapper",
+      "Fixed LLibrary version support",
+      "Fixed server crash"
     ]
   },
-  "updateUrl": "",
-  "iconUrl": "http://i.imgur.com/qllpmlN.png"
+  "updateUrl": "http://www.planetminecraft.com/mod/chatalert/",
+  "iconUrl": "http://i.imgur.com/WPRWd7j.png"
 }
