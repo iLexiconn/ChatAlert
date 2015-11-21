@@ -1,4 +1,4 @@
-[<img src="http://i.imgur.com/yHwsJiO.png" alt="ChatAlert" align="left"/>](http://www.minecraftforum.net/forums/mapping-and-modding/minecraft-mods/)
+[<img src="http://i.imgur.com/5lawAsG.png" alt="ChatAlert" align="left"/>](http://www.planetminecraft.com/mod/chatalert/)
 
 ==========
 
