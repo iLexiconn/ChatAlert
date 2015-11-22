@@ -1,5 +1,5 @@
 {
-  "release": "0.1.1",
+  "release": "0.1.2",
   "versions": {
     "0.1.0": [
       "Initial release"
@@ -8,6 +8,9 @@
       "Added LLibrary wrapper",
       "Fixed LLibrary version support",
       "Fixed server crash"
+    ],
+    "0.1.2": [
+      "Fixed mod getting ignored by Forge"
     ]
   },
   "updateUrl": "http://www.planetminecraft.com/mod/chatalert/",
