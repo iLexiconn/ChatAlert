@@ -19,7 +19,7 @@ public class ClientEventHandler {
     public Minecraft mc = Minecraft.getMinecraft();
 
     public int messageIndex = 4;
-    public Pattern defaultPattern = Pattern.compile("(<)((?:[a-z][a-z]+))(>)(.*)", Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
+    public Pattern defaultPattern = Pattern.compile("(<)((?:[a-z][a-z]*[0-9]+[a-z0-9]*))(>)(.*)", Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
 
     @SubscribeEvent
     public void onMessageReceived(ClientChatReceivedEvent event) {
