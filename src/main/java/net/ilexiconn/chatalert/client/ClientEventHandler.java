@@ -11,17 +11,26 @@ import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @SideOnly(Side.CLIENT)
 public class ClientEventHandler {
     public Minecraft mc = Minecraft.getMinecraft();
 
+    public int messageIndex = 4;
+    public Pattern defaultPattern = Pattern.compile("(<)((?:[a-z][a-z]+))(>)(.*)", Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
+
     @SubscribeEvent
     public void onMessageReceived(ClientChatReceivedEvent event) {
-        if (event.message.getUnformattedText().contains("> ")) {
-            List<String> tags = Lists.newArrayList(ChatAlertConfig.tags);
-            tags.add(mc.thePlayer.getDisplayNameString());
-            String message = event.message.getUnformattedText().split("> ")[1];
+        List<String> tags = Lists.newArrayList(ChatAlertConfig.tags);
+        tags.add(mc.thePlayer.getCommandSenderName());
+
+        Matcher matcher = defaultPattern.matcher(event.message.getUnformattedText());
+
+        if (matcher.find()) {
+            String message = matcher.group(messageIndex);
+
             boolean flag = false;
             for (String tag : tags) {
                 if (message.contains(tag)) {
@@ -29,8 +38,9 @@ public class ClientEventHandler {
                     message = message.replace(tag, ChatAlertConfig.chatFormatting + tag + EnumChatFormatting.RESET);
                 }
             }
+
             if (flag) {
-                event.message = new ChatComponentText(event.message.getUnformattedText().split("> ")[0] + "> " + message);
+                event.message = new ChatComponentText(matcher.group(1) + matcher.group(2) + matcher.group(3) + message);
                 mc.thePlayer.playSound(ChatAlertConfig.sound, 1f, 1f);
             }
         }
