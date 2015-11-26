@@ -9,18 +9,18 @@ import net.ilexiconn.chatalert.server.config.ChatAlertConfig;
 import net.ilexiconn.llibrary.common.config.ConfigHelper;
 import net.ilexiconn.llibrary.common.log.LoggerHelper;
 
-@Mod(modid = "chatalert", name = "ChatAlert", version = ChatAlert.VERSION, dependencies = "required-after:llibrary@[0.5.5,)", guiFactory = "net.ilexiconn.chatalert.client.gui.GuiConfigFactory")
+@Mod(modid = "chatalert", name = "ChatAlert", version = ChatAlert.VERSION, dependencies = "required-after:llibrary@[0.6.0,)", guiFactory = "net.ilexiconn.chatalert.client.gui.GuiConfigFactory")
 public class ChatAlert {
     @SidedProxy(serverSide = "net.ilexiconn.chatalert.server.ServerProxy", clientSide = "net.ilexiconn.chatalert.client.ClientProxy")
     public static ServerProxy proxy;
     public static LoggerHelper logger = new LoggerHelper("ChatAlert");
 
-    public static final String VERSION = "0.1.2";
+    public static final String VERSION = "0.2.0-develop";
 
     @Mod.EventHandler
     public void preInit(FMLPreInitializationEvent event) {
         if (FMLCommonHandler.instance().getEffectiveSide().isServer()) {
-            logger.info("This mod only works on clients. Aborting initialization...");
+            logger.info("This mod only has effect clients. Aborting initialization...");
             return;
         }
 
