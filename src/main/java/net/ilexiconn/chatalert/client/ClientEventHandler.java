@@ -1,6 +1,6 @@
 package net.ilexiconn.chatalert.client;
 
-import com.google.common.collect.Lists;
+import net.ilexiconn.chatalert.ChatAlert;
 import net.ilexiconn.chatalert.server.config.ChatAlertConfig;
 import net.minecraft.client.Minecraft;
 import net.minecraft.util.ChatComponentText;
@@ -10,7 +10,6 @@ import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
-import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -18,31 +17,50 @@ import java.util.regex.Pattern;
 public class ClientEventHandler {
     public Minecraft mc = Minecraft.getMinecraft();
 
-    public int messageIndex = 4;
-    public Pattern defaultPattern = Pattern.compile("(<)((?:[a-z][a-z]*[0-9]+[a-z0-9]*))(>)(.*)", Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
+    public int defaultUsernameIndex = 2;
+    public Pattern defaultPattern = Pattern.compile("(<)((?:[a-zA-Z0-9_]+))(>)(.*)");
 
     @SubscribeEvent
     public void onMessageReceived(ClientChatReceivedEvent event) {
-        List<String> tags = Lists.newArrayList(ChatAlertConfig.tags);
-        tags.add(mc.thePlayer.getCommandSenderName());
+        Matcher matcher = null;
 
-        Matcher matcher = defaultPattern.matcher(event.message.getUnformattedText());
+        int usernameIndex = -1;
+        for (String s : ChatAlertConfig.serverRegex) {
+            String[] p = s.split(";");
+            if (p.length != 3) {
+                ChatAlert.logger.error("Found faulty config entry for 'Custom Chat Layouts': " + s);
+                continue;
+            }
+            if (mc.getCurrentServerData() != null && mc.getCurrentServerData().serverIP.equals(p[0])) {
+                matcher = Pattern.compile(p[1]).matcher(event.message.getUnformattedText());
+                usernameIndex = Integer.parseInt(p[2]);
+                break;
+            }
+        }
+        if (matcher == null) {
+            matcher = defaultPattern.matcher(event.message.getUnformattedText());
+            usernameIndex = defaultUsernameIndex;
+        }
 
         if (matcher.find()) {
-            String message = matcher.group(messageIndex);
-
-            boolean flag = false;
-            for (String tag : tags) {
-                if (message.contains(tag)) {
-                    flag = true;
-                    message = message.replace(tag, ChatAlertConfig.chatFormatting + tag + EnumChatFormatting.RESET);
+            String username = matcher.group(usernameIndex);
+            for (String s : ChatAlertConfig.ignoredPeople) {
+                if (s.equals(username.trim())) {
+                    event.setCanceled(true);
                 }
             }
 
-            if (flag) {
-                event.message = new ChatComponentText(matcher.group(1) + matcher.group(2) + matcher.group(3) + message);
-                mc.thePlayer.playSound(ChatAlertConfig.sound, 1f, 1f);
+            String lastColor = EnumChatFormatting.WHITE.toString();
+            int lastIndex = event.message.getFormattedText().substring(0, event.message.getFormattedText().length() - 8).lastIndexOf("§");
+            if (lastIndex != -1) {
+                lastColor = event.message.getFormattedText().substring(lastIndex, lastIndex + 2);
             }
+
+            for (String s : ChatAlertConfig.tags) {
+                event.message = new ChatComponentText(event.message.getFormattedText().replace(s, EnumChatFormatting.getValueByName(ChatAlertConfig.color) + s + lastColor));
+            }
+
+            mc.thePlayer.playSound(ChatAlertConfig.sound, 1f, 1f);
         }
     }
 }
