@@ -45,7 +45,7 @@ minecraft {
     version = config.minecraft_version + "-" + config.forge_version + "-" + config.minecraft_version
     runDir = "minecraft"
     mappings = "snapshot_20151122"
-    replace '${version}', project.version
+    replace "${version}", project.version
 }
 
 repositories {

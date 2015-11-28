@@ -1,4 +1,4 @@
-[<img src="http://i.imgur.com/5lawAsG.png" alt="ChatAlert" align="left"/>](http://www.planetminecraft.com/mod/chatalert/)
+[<img src="http://i.imgur.com/RWQ6QHN.png" alt="ChatAlert" align="left"/>](http://www.planetminecraft.com/mod/chatalert/)
 
 ==========
 
