@@ -7,6 +7,7 @@ import net.minecraft.util.ChatComponentText;
 import net.minecraft.util.EnumChatFormatting;
 import net.minecraftforge.client.event.ClientChatReceivedEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+import net.minecraftforge.fml.common.network.FMLNetworkEvent;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
@@ -17,13 +18,14 @@ import java.util.regex.Pattern;
 public class ClientEventHandler {
     public Minecraft mc = Minecraft.getMinecraft();
 
-    public int defaultUsernameIndex = 2;
-    public Pattern defaultPattern = Pattern.compile("(<)((?:[a-zA-Z0-9_]+))(>)(.*)");
+    public Pattern vanillaPattern = Pattern.compile("(<)((?:[a-zA-Z0-9_]+))(>)(.*)");
+    public int vanillaUsernameIndex = 2;
+
+    public Pattern currentPattern = vanillaPattern;
+    public int currentUsernameIndex = vanillaUsernameIndex;
 
     @SubscribeEvent
-    public void onMessageReceived(ClientChatReceivedEvent event) {
-        Matcher matcher = null;
-        int usernameIndex = -1;
+    public void onServerJoin(FMLNetworkEvent.ClientConnectedToServerEvent event) {
         for (String s : ChatAlertConfig.serverRegex) {
             String[] p = s.split(";");
             if (p.length != 3) {
@@ -31,17 +33,24 @@ public class ClientEventHandler {
                 continue;
             }
             if (mc.getCurrentServerData() != null && mc.getCurrentServerData().serverIP.equals(p[0])) {
-                matcher = Pattern.compile(p[1]).matcher(event.message.getUnformattedText());
-                usernameIndex = Integer.parseInt(p[2]);
-                break;
+                currentPattern = Pattern.compile(p[1]);
+                currentUsernameIndex = Integer.parseInt(p[2]);
+                return;
             }
         }
-        if (matcher == null) {
-            matcher = defaultPattern.matcher(event.message.getUnformattedText());
-            usernameIndex = defaultUsernameIndex;
-        }
+    }
+
+    @SubscribeEvent
+    public void onServerLeave(FMLNetworkEvent.ClientDisconnectionFromServerEvent event) {
+        currentPattern = vanillaPattern;
+        currentUsernameIndex = vanillaUsernameIndex;
+    }
+
+    @SubscribeEvent
+    public void onMessageReceived(ClientChatReceivedEvent event) {
+        Matcher matcher = currentPattern.matcher(event.message.getUnformattedText());
         if (matcher.find()) {
-            String username = matcher.group(usernameIndex);
+            String username = matcher.group(currentUsernameIndex);
             for (String s : ChatAlertConfig.ignoredPeople) {
                 if (s.equals(username.trim())) {
                     event.setCanceled(true);
