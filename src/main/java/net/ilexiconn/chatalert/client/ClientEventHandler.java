@@ -1,6 +1,7 @@
 package net.ilexiconn.chatalert.client;
 
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
+import cpw.mods.fml.common.network.FMLNetworkEvent;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import net.ilexiconn.chatalert.ChatAlert;
@@ -17,13 +18,14 @@ import java.util.regex.Pattern;
 public class ClientEventHandler {
     public Minecraft mc = Minecraft.getMinecraft();
 
-    public int defaultUsernameIndex = 2;
-    public Pattern defaultPattern = Pattern.compile("(<)((?:[a-zA-Z0-9_]+))(>)(.*)");
+    public Pattern vanillaPattern = Pattern.compile("(<)((?:[a-zA-Z0-9_]+))(>)(.*)");
+    public int vanillaUsernameIndex = 2;
+
+    public Pattern currentPattern = vanillaPattern;
+    public int currentUsernameIndex = vanillaUsernameIndex;
 
     @SubscribeEvent
-    public void onMessageReceived(ClientChatReceivedEvent event) {
-        Matcher matcher = null;
-        int usernameIndex = -1;
+    public void onServerJoin(FMLNetworkEvent.ClientConnectedToServerEvent event) {
         for (String s : ChatAlertConfig.serverRegex) {
             String[] p = s.split(";");
             if (p.length != 3) {
@@ -31,17 +33,24 @@ public class ClientEventHandler {
                 continue;
             }
             if (mc.func_147104_D() != null && mc.func_147104_D().serverIP.equals(p[0])) {
-                matcher = Pattern.compile(p[1]).matcher(event.message.getUnformattedText());
-                usernameIndex = Integer.parseInt(p[2]);
-                break;
+                currentPattern = Pattern.compile(p[1]);
+                currentUsernameIndex = Integer.parseInt(p[2]);
+                return;
             }
         }
-        if (matcher == null) {
-            matcher = defaultPattern.matcher(event.message.getUnformattedText());
-            usernameIndex = defaultUsernameIndex;
-        }
+    }
+
+    @SubscribeEvent
+    public void onServerLeave(FMLNetworkEvent.ClientDisconnectionFromServerEvent event) {
+        currentPattern = vanillaPattern;
+        currentUsernameIndex = vanillaUsernameIndex;
+    }
+
+    @SubscribeEvent
+    public void onMessageReceived(ClientChatReceivedEvent event) {
+        Matcher matcher = currentPattern.matcher(event.message.getUnformattedText());
         if (matcher.find()) {
-            String username = matcher.group(usernameIndex);
+            String username = matcher.group(currentUsernameIndex);
             for (String s : ChatAlertConfig.ignoredPeople) {
                 if (s.equals(username.trim())) {
                     event.setCanceled(true);
