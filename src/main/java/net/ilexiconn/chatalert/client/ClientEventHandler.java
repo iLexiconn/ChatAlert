@@ -23,7 +23,6 @@ public class ClientEventHandler {
     @SubscribeEvent
     public void onMessageReceived(ClientChatReceivedEvent event) {
         Matcher matcher = null;
-
         int usernameIndex = -1;
         for (String s : ChatAlertConfig.serverRegex) {
             String[] p = s.split(";");
@@ -41,7 +40,6 @@ public class ClientEventHandler {
             matcher = defaultPattern.matcher(event.message.getUnformattedText());
             usernameIndex = defaultUsernameIndex;
         }
-
         if (matcher.find()) {
             String username = matcher.group(usernameIndex);
             for (String s : ChatAlertConfig.ignoredPeople) {
@@ -49,18 +47,21 @@ public class ClientEventHandler {
                     event.setCanceled(true);
                 }
             }
-
             String lastColor = EnumChatFormatting.WHITE.toString();
             int lastIndex = event.message.getFormattedText().substring(0, event.message.getFormattedText().length() - 8).lastIndexOf("§");
             if (lastIndex != -1) {
                 lastColor = event.message.getFormattedText().substring(lastIndex, lastIndex + 2);
             }
-
+            boolean flag = false;
             for (String s : ChatAlertConfig.tags) {
-                event.message = new ChatComponentText(event.message.getFormattedText().replace(s, EnumChatFormatting.getValueByName(ChatAlertConfig.color) + s + lastColor));
+                if (event.message.getUnformattedText().contains(s)) {
+                    event.message = new ChatComponentText(event.message.getFormattedText().replace(s, ChatAlertConfig.chatFormatting + s + lastColor));
+                    flag = true;
+                }
             }
-
-            mc.thePlayer.playSound(ChatAlertConfig.sound, 1f, 1f);
+            if (flag) {
+                mc.thePlayer.playSound(ChatAlertConfig.sound, 1f, 1f);
+            }
         }
     }
 }
