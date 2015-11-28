@@ -1,5 +1,5 @@
 {
-  "release": "0.1.2",
+  "release": "0.2.0",
   "versions": {
     "0.1.0": [
       "Initial release"
@@ -11,8 +11,14 @@
     ],
     "0.1.2": [
       "Fixed mod getting ignored by Forge"
+    ],
+    "0.2.0": [
+      "Ported to 1.8.8",
+      "Added custom regex support",
+      "Added username ignore list",
+      "Fixed alerts resetting color"
     ]
   },
   "updateUrl": "http://www.planetminecraft.com/mod/chatalert/",
-  "iconUrl": "http://i.imgur.com/WPRWd7j.png"
+  "iconUrl": "http://i.imgur.com/rtCnCW3.png"
 }
